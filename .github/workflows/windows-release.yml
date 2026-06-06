@@ -1,0 +1,50 @@
+name: Windows Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-windows:
+    name: Build Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.38.10"
+          channel: stable
+          cache: true
+
+      - name: Build release package
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\tool\build_windows_release.ps1
+
+      - name: Install Inno Setup
+        shell: powershell
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        shell: powershell
+        run: powershell -ExecutionPolicy Bypass -File .\tool\build_windows_installer.ps1
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: FileTools-windows-x64
+          path: dist\FileTools-windows-x64.zip
+          if-no-files-found: error
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: FileTools-windows-installer
+          path: dist\FileToolsSetup-*-x64.exe
+          if-no-files-found: error
