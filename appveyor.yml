@@ -1,0 +1,22 @@
+version: 1.0.{build}
+image: Visual Studio 2022
+
+environment:
+  FLUTTER_HOME: C:\tools\flutter
+
+install:
+  - ps: git clone https://github.com/flutter/flutter.git -b stable --depth 1 $env:FLUTTER_HOME
+  - ps: $env:PATH = "$env:FLUTTER_HOME\bin;$env:PATH"
+  - flutter --version
+  - choco install innosetup --no-progress -y
+
+build_script:
+  - ps: $env:PATH = "$env:FLUTTER_HOME\bin;$env:PATH"
+  - ps: powershell -ExecutionPolicy Bypass -File .\tool\build_windows_release.ps1
+  - ps: powershell -ExecutionPolicy Bypass -File .\tool\build_windows_installer.ps1
+
+artifacts:
+  - path: dist\FileTools-windows-x64.zip
+    name: FileTools-windows-x64
+  - path: dist\FileToolsSetup-*-x64.exe
+    name: FileTools-windows-installer
